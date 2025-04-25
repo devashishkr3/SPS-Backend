@@ -15,7 +15,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: "50mb" }));
 
 // Whitelist your frontend domain
-const allowedOrigins = ["http://localhost:5173"]; // Add production domain when deploying
+const allowedOrigins = [
+  "https://school-management-fqyzvx3ed-devashishkr3s-projects.vercel.app",
+  // "http://localhost:5173",
+  "https://school-management-eta-one.vercel.app",
+];
+// Add production domain when deploying
 
 app.use(
   cors({
