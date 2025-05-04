@@ -17,7 +17,7 @@ app.use(express.json({ limit: "50mb" }));
 // Whitelist your frontend domain
 const allowedOrigins = [
   "https://school-management-fqyzvx3ed-devashishkr3s-projects.vercel.app",
-  // "http://localhost:5173",
+  "http://localhost:5173",
   "https://school-management-eta-one.vercel.app",
 ];
 // Add production domain when deploying
@@ -39,6 +39,12 @@ app.use("/school", schoolRoute);
 app.use("/student", studentRoute);
 app.use("/teacher", teacherRoute);
 app.use("/admin", adminRoute);
+app.get("/api/test", (req, res) => {
+  res.status(200).json({
+    message: "API working properly",
+    success: true,
+  });
+});
 // app.use("/admission");
 
 // Handle Invalid Routes
