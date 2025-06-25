@@ -21,6 +21,7 @@ const createTeacher = async (req, res) => {
       qualification,
       address,
     } = req.body;
+    console.log(req.body);
 
     if (!req.file) {
       return res.status(404).json({

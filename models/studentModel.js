@@ -128,7 +128,7 @@ const studentSchema = new mongoose.Schema(
         year: { type: Number, required: true },
         status: { type: String, enum: ["paid", "unpaid"], default: "unpaid" },
         totalAmount: { type: Number, default: 0 },
-        paidOn: { type: Date, required: true },
+        paidOn: { type: Date, default: Date.now },
       },
     ],
   },

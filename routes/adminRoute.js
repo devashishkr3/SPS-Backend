@@ -4,6 +4,7 @@ const {
   adminLoginController,
   adminRegister,
   changeAdminPassword,
+  adminLogoutController,
   createTeacher,
   getAllTeachers,
   updateTeacher,
@@ -46,6 +47,7 @@ const {
   noticeValidator,
   eventValidator,
   verifyToken,
+  paymentValidation,
 } = require("../middlewares/admin/app");
 const upload = require("../utils/multerConfig");
 
@@ -58,6 +60,7 @@ router.post(
 );
 router.post("/login", adminLoginValidation, adminLoginController);
 router.post("/update-profile", verifyAdmin, changeAdminPassword);
+router.post("/logout", adminLogoutController);
 
 //Dashboard
 // router.get("/profile", verifyAdmin, adminProfile);
@@ -137,7 +140,12 @@ router.get("/student", verifyAdmin);
 
 //Payment Routes
 router.get("/get-all-student", verifyAdmin, checkAllStudentPayment);
-router.post("/payment/make-payment", verifyAdmin, makeNewPayment);
+router.post(
+  "/payment/make-payment",
+  verifyAdmin,
+  paymentValidation,
+  makeNewPayment
+);
 router.get("/payment/history", verifyAdmin, getPaymentHistory);
 router.get("/earning", verifyAdmin, getDashboardGraphData);
 // router.get("/checkPayment-of-students", verifyAdmin, getAllStudents);

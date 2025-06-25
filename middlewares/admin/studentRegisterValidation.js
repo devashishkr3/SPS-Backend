@@ -74,6 +74,13 @@ const studentRegisterValidation = (req, res, next) => {
     address: Joi.string().required().messages({
       "string.empty": "Address is required.",
     }),
+    residence_type: Joi.string()
+      .valid("hosteller", "day_scholar")
+      .required()
+      .messages({
+        "any.only": "Residence type must be either hosteller or day scholar.",
+        "string.empty": "Residence type is required.",
+      }),
     // fixedFees: Joi.object({
     // tuitionFee: Joi.number().default(0),
     // busCharge: Joi.number().default(0),
@@ -85,6 +92,7 @@ const studentRegisterValidation = (req, res, next) => {
 
   // Validate request body
   const { error } = schema.validate(req.body, { abortEarly: false });
+
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message);
     return res.status(400).json({

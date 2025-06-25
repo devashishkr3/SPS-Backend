@@ -8,6 +8,8 @@ const { verifyAdmin } = require("./verifyAdmin");
 const { noticeValidator } = require("./noticeValidator");
 const { eventValidator } = require("./eventValidator");
 const { verifyToken } = require("./verifyToken");
+const { paymentValidation } = require("./paymentValidator");
+const { checkBlacklistedToken } = require("./blacklistedToken");
 
 module.exports = {
   adminRegisterValidation,
@@ -18,4 +20,6 @@ module.exports = {
   noticeValidator,
   eventValidator,
   verifyToken,
+  paymentValidation,
+  checkBlacklistedToken,
 };
