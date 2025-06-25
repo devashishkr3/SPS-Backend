@@ -2,6 +2,7 @@ const {
   adminRegister,
   adminLoginController,
   changeAdminPassword,
+  adminLogoutController,
 } = require("./adminAuthController");
 const {
   createClass,
@@ -53,6 +54,7 @@ module.exports = {
   adminRegister,
   adminLoginController,
   changeAdminPassword,
+  adminLogoutController,
   createTeacher,
   getAllTeachers,
   updateTeacher,
