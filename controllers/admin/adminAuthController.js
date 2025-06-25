@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Admin = require("../../models/adminModel");
+const BlacklistedToken = require("../../models/blacklistedToken");
 const cloudinary = require("../../config/cloudinaryConfig");
 const fs = require("fs-extra");
 const upload = require("../../utils/multerConfig");
@@ -156,7 +157,7 @@ const changeAdminPassword = async (req, res) => {
       });
     }
 
-    // ✅ Use await to compare passwords
+    // Use await to compare passwords
     const isPasswordCorrect = await bcrypt.compare(oldPassword, admin.password);
 
     if (!isPasswordCorrect) {
@@ -188,8 +189,34 @@ const changeAdminPassword = async (req, res) => {
   }
 };
 
+const adminLogoutController = async (req, res) => {
+  try {
+    const token = req.headers.token;
+
+    if (!token) {
+      return res.status(404).json({
+        message: "Token not provided",
+        success: false,
+      });
+    }
+
+    await BlacklistedToken.create({ token });
+
+    return res.status(200).json({
+      message: "Logout Successful",
+      success: true,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
 module.exports = {
   adminLoginController,
   adminRegister,
   changeAdminPassword,
+  adminLogoutController,
 };
