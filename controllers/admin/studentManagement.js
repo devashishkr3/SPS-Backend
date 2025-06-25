@@ -33,7 +33,7 @@ const createStudent = async (req, res) => {
       student_class,
     } = req.body;
 
-    console.log(payload);
+    // console.log(payload);
     console.log(req.body);
 
     if (!req.file) {
@@ -45,10 +45,17 @@ const createStudent = async (req, res) => {
     // creating StudentID using uuid
     const studentID = `SPS-${uuidv4().slice(0, 6).toUpperCase()}`;
 
-    const existStudent = await Student.findOne({ admission_no });
+    const existStudent = await Student.findOne({
+      $or: [
+        { admission_no },
+        { aadhar_no },
+        // { class_roll_no }
+      ],
+    });
     if (existStudent) {
       return res.status(409).json({
-        message: "Student already exists with this admission number",
+        message:
+          "Student already exists with this admission number or aadhar no",
         success: false,
       });
     }
@@ -74,6 +81,7 @@ const createStudent = async (req, res) => {
     // const hashedPassword = await bcrypt.hash(password, 10);
     // console.log("hashing ok");
 
+    // try {
     const newStudent = new Student({
       name,
       email,
@@ -100,6 +108,9 @@ const createStudent = async (req, res) => {
     });
 
     const savedStudent = await newStudent.save();
+    // } catch (err) {
+    // console.log("problem in saving studednt.", err);
+    // }
 
     if (!savedStudent) {
       return res.status(400).json({
@@ -126,7 +137,16 @@ const createStudent = async (req, res) => {
 //get all students(READ)
 const getAllStudents = async (req, res) => {
   try {
-    const students = await Student.find().populate("student_class");
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const students = await Student.find()
+      .populate("student_class")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Student.countDocuments();
 
     if (!students) {
       res.status(404).json({
@@ -138,11 +158,17 @@ const getAllStudents = async (req, res) => {
       message: "Students Found",
       success: true,
       data: students,
+      pagination: {
+        totalItems: total,
+        currPage: page,
+        totalPage: Math.ceil(total / limit),
+        limit: limit,
+      },
     });
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: "Internal Server in Finding Students",
+      message: "Internal Server Error",
       success: false,
     });
   }

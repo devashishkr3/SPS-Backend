@@ -1,112 +1,3 @@
-// const Gallery = require("../../models/galleryModel");
-// const cloudinary = require("../../config/cloudinaryConfig");
-// const upload = require("../../utils/multerConfig");
-// const fs = require("fs-extra");
-
-// //Adding Images In Gallery
-// const addGalleryImages = async (req, res) => {
-//   console.log(req.files);
-//   try {
-//     if (!req.files || req.files.length === 0) {
-//       return res.status(400).json({
-//         message: "No Images Uploaded!",
-//         success: false,
-//       });
-//     }
-//     let uploadedImages = [];
-
-//     for (const file of req.files) {
-//       const result = await cloudinary.uploader.upload(file.path, {
-//         folder: "SPS/Gallery",
-//       });
-
-//       uploadedImages.push({
-//         imageURL: result.secure_url,
-//         imageID: result.public_id,
-//       });
-
-//       await fs.unlink(file.path);
-//     }
-
-//     const newGallery = new Gallery({ images: uploadedImages });
-//     await newGallery.save();
-
-//     return res.status(200).json({
-//       message: "Image Saved SuccessFully",
-//       success: true,
-//     });
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).json({
-//       message: "Internal Server Error",
-//       success: false,
-//     });
-//   }
-// };
-
-// //Get All Images from Gallery
-// const getAllImages = async (req, res) => {
-//   try {
-//     const allImages = await Gallery.find();
-//     if (!allImages) {
-//       return res.status(404).json({
-//         message: "No Images Found",
-//         success: false,
-//       });
-//     }
-//     return res.status(200).json({
-//       message: "Images Found",
-//       success: true,
-//       data: allImages,
-//     });
-//   } catch (err) {
-//     return res.status(500).json({
-//       message: "Internal Server Error",
-//       success: false,
-//     });
-//   }
-// };
-
-// //Delete Image from Gallery
-// const deleteImage = async (req, res) => {
-//   try {
-//     const { imageID } = req.params;
-//     const imgID = `SPS/Gallery/${imageID}`;
-
-//     const image = await Gallery.findOne({
-//       "images.imageID": imgID,
-//     });
-
-//     if (!image) {
-//       return res.status(404).json({
-//         message: "Image not found!",
-//         success: false,
-//       });
-//     }
-
-//     await Gallery.updateOne({}, { $pull: { images: { imageID: imgID } } });
-
-//     await cloudinary.uploader.destroy(imgID);
-
-//     const updatedGallery = await Gallery.findOne();
-//     if (updatedGallery && updatedGallery.images.length === 0) {
-//       await Gallery.deleteOne();
-//     }
-
-//     return res.status(200).json({
-//       message: "Image Deleted SuccessFully",
-//       success: true,
-//     });
-//   } catch (err) {
-//     return res.status(500).json({
-//       message: "Internal Server Error",
-//       success: false,
-//     });
-//   }
-// };
-
-// module.exports = { addGalleryImages, getAllImages, deleteImage };
-
 const Gallery = require("../../models/galleryModel");
 const cloudinary = require("../../config/cloudinaryConfig");
 const upload = require("../../utils/multerConfig");
@@ -135,7 +26,7 @@ const addGalleryImage = async (req, res) => {
       folder: "SPS/Gallery",
     });
 
-    // Creating new image entry
+    // Creating new image
     const newImage = new Gallery({
       title,
       imageURL: result.secure_url,
@@ -163,7 +54,13 @@ const addGalleryImage = async (req, res) => {
 // Get All Images from Gallery
 const getAllImages = async (req, res) => {
   try {
-    const allImages = await Gallery.find();
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 12;
+    const skip = (page - 1) * limit;
+
+    const allImages = await Gallery.find().skip(skip).limit(limit);
+    const total = await Gallery.countDocuments();
+
     if (allImages.length === 0) {
       return res.status(404).json({
         message: "No Images Found!",
@@ -174,6 +71,12 @@ const getAllImages = async (req, res) => {
       message: "Images Found!",
       success: true,
       data: allImages,
+      pagination: {
+        totalItems: total,
+        currPage: page,
+        totalPage: Math.ceil(total / limit),
+        limit: limit,
+      },
     });
   } catch (err) {
     return res.status(500).json({

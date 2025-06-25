@@ -3,7 +3,17 @@ const Student = require("../../models/studentModel");
 
 const checkAllStudentPayment = async (req, res) => {
   try {
-    const students = await Student.find();
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const students = await Student.find()
+      .populate("student_class")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Student.countDocuments();
+
     if (!students) {
       return res.status(404).json({
         message: "Students Not Found",
@@ -15,6 +25,12 @@ const checkAllStudentPayment = async (req, res) => {
       message: "Students Found",
       success: true,
       data: students,
+      pagination: {
+        toatalItems: total,
+        currPage: page,
+        limit: limit,
+        totalPage: Math.ceil(total / limit),
+      },
     });
   } catch (err) {
     return res.status(500).json({
@@ -31,6 +47,7 @@ const makeNewPayment = async (req, res) => {
       studentID,
       name,
       studentClass,
+      year,
       group,
       month,
       tuitionFee,
@@ -43,10 +60,10 @@ const makeNewPayment = async (req, res) => {
       paymentMethod,
     } = req.body;
 
-    console.log(req.body);
+    console.log(`request body : `, req.body);
 
     const student = await Student.findOne({ studentID });
-    console.log(student);
+    console.log(`Student : `, student);
     if (!student) {
       return res.status(404).json({
         message: "Student Not Fount With This StudentID",
@@ -54,52 +71,95 @@ const makeNewPayment = async (req, res) => {
       });
     }
 
-    const payment = new Payment({
+    const checkStudent = await Payment.findOne({
       studentId: student.id,
-      name,
-      studentClass,
-      group,
-      month,
-      fees: {
-        tuitionFee,
-        bookFee,
-        copyFee,
-        dressFee,
-        miscellaneous,
-      },
-      totalAmount,
-      receiptNo,
-      paymentMethod,
     });
 
-    await payment.save();
-
-    student.payments.push({
-      month,
-      year: new Date().getFullYear,
-      status: "Paid",
-      totalAmount,
-      paidOn: new Date(),
-    });
-
-    await student.save();
-
-    if (student.whatsapp_no) {
-      const message = `Dear Parent , payment of ₹${totalAmount} has been received of 
-      Student name :- ${student.name} 
-      StudentID : ${student.studentID}
-      Month : ${month}
-      Receipt No : ${receiptNo}.
-      Thank You ❤️!!`;
-
-      console.log(message);
-
-      // await clientInformation.message.create({
-      //   from: WHATSAPP_NO,
-      //   to: `whatsapp +91${student.whatsapp_no}`,
-      //   body: message,
-      // });
+    if (checkStudent.month === month && checkStudent.year === year) {
+      return res.status(400).json({
+        message: `Payment already done for ${month}, ${year}.`,
+        success: false,
+      });
     }
+
+    // ✅ Check if already paid for this month + year
+    // const alreadyPaid = student.payments.find(
+    //   (p) => p.month === month && p.year === year
+    // );
+
+    // if (alreadyPaid) {
+    //   return res.status(400).json({
+    //     message: `Payment already done for ${month}, ${year}.`,
+    //     success: false,
+    //   });
+    // }
+
+    const existReceipt = await Payment.findOne({
+      receiptNo,
+    });
+
+    if (existReceipt) {
+      return res.status(400).json({
+        message: `Receipt No already exist`,
+        success: false,
+      });
+    }
+
+    try {
+      const payment = new Payment({
+        studentId: student.id,
+        name,
+        studentClass: student.student_class,
+        group,
+        month,
+        year,
+        fees: {
+          tuitionFee,
+          bookFee,
+          copyFee,
+          dressFee,
+          miscellaneous,
+        },
+        totalAmount,
+        receiptNo,
+        paymentMethod,
+      });
+
+      await payment.save();
+    } catch (err) {
+      console.log("problem in payment saving", err);
+    }
+
+    try {
+      student.payments.push({
+        month,
+        year, //: 2025, //new Date().getFullYear()
+        status: "paid",
+        totalAmount,
+        // paidOn: Date.now(),
+      });
+
+      await student.save();
+    } catch (err) {
+      console.log("error in student payment pushing", err);
+    }
+
+    // if (student.whatsapp_no) {
+    //   const message = `Dear Parent , payment of ₹${totalAmount} has been received of
+    //   Student name :- ${student.name}
+    //   StudentID : ${student.studentID}
+    //   Month : ${month}
+    //   Receipt No : ${receiptNo}.
+    //   Thank You ❤️!!`;
+
+    //   console.log(message);
+
+    // await clientInformation.message.create({
+    //   from: WHATSAPP_NO,
+    //   to: `whatsapp +91${student.whatsapp_no}`,
+    //   body: message,
+    // });
+    // }
     return res.status(201).json({
       message: "Payment Successful",
       success: true,
@@ -111,6 +171,90 @@ const makeNewPayment = async (req, res) => {
     });
   }
 };
+
+//Commented out the code below as it is not in use ccurrently
+
+const getPaymentHistory = async (req, res) => {
+  try {
+    const paymentInfo = await Payment.find();
+    if (!paymentInfo) {
+      return res.status(404).json({
+        message: "Payment Not Found",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Payment Found",
+      success: true,
+      data: paymentInfo,
+    });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", success: false });
+  }
+};
+
+module.exports = { checkAllStudentPayment, makeNewPayment, getPaymentHistory };
+
+// const now = new Date();
+// const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+// const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+// const last7Days = new Date(now.setDate(now.getDate() - 6));
+
+// // 🟢 **Aggregation Query for Total Collections**
+// const paymentStats = await Payment.aggregate([
+//   {
+//     $match: { paymentDate: { $gte: last7Days } },
+//   },
+//   {
+//     $group: {
+//       _id: null,
+//       totalAmount: { $sum: "$totalAmount" },
+//       daily: {
+//         $push: {
+//           date: "$paymentDate",
+//           amount: "$totalAmount",
+//         },
+//       },
+//       weekly: {
+//         $push: {
+//           week: { $week: "$paymentDate" },
+//           amount: "$totalAmount",
+//         },
+//       },
+//       monthly: {
+//         $push: {
+//           month: { $month: "$paymentDate" },
+//           amount: "$totalAmount",
+//         },
+//       },
+//     },
+//   },
+// ]);
+
+// const totalCollection = paymentStats[0]?.totalAmount || 0;
+// const dailyPayments = paymentStats[0]?.daily || [];
+// const weeklyPayments = paymentStats[0]?.weekly || [];
+// const monthlyPayments = paymentStats[0]?.monthly || [];
+
+// // 🟢 **Fetch All Payments with Sorting**
+// const payments = await Payment.find({ paymentDate: { $gte: last7Days } })
+//   .sort({ paymentDate: -1 })
+//   .populate("studentId", "name studentID")
+//   .populate("studentClass", "className");
+
+// return res.status(200).json({
+//   message: "Payment Statistics",
+//   success: true,
+//   totalCollection,
+//   dailyPayments,
+//   weeklyPayments,
+//   monthlyPayments,
+//   payments,
+// });
 
 // 3️ Payment Report API (Daily, Monthly, Yearly Collection)
 // const getPaymentHistory = async (req, res) => {
@@ -271,71 +415,3 @@ const makeNewPayment = async (req, res) => {
 //       .json({ message: "Internal Server Error", success: false });
 //   }
 // };
-
-const getPaymentHistory = async (req, res) => {
-  try {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-    const last7Days = new Date(now.setDate(now.getDate() - 6));
-
-    // 🟢 **Aggregation Query for Total Collections**
-    const paymentStats = await Payment.aggregate([
-      {
-        $match: { paymentDate: { $gte: last7Days } },
-      },
-      {
-        $group: {
-          _id: null,
-          totalAmount: { $sum: "$totalAmount" },
-          daily: {
-            $push: {
-              date: "$paymentDate",
-              amount: "$totalAmount",
-            },
-          },
-          weekly: {
-            $push: {
-              week: { $week: "$paymentDate" },
-              amount: "$totalAmount",
-            },
-          },
-          monthly: {
-            $push: {
-              month: { $month: "$paymentDate" },
-              amount: "$totalAmount",
-            },
-          },
-        },
-      },
-    ]);
-
-    const totalCollection = paymentStats[0]?.totalAmount || 0;
-    const dailyPayments = paymentStats[0]?.daily || [];
-    const weeklyPayments = paymentStats[0]?.weekly || [];
-    const monthlyPayments = paymentStats[0]?.monthly || [];
-
-    // 🟢 **Fetch All Payments with Sorting**
-    const payments = await Payment.find({ paymentDate: { $gte: last7Days } })
-      .sort({ paymentDate: -1 })
-      .populate("studentId", "name studentID")
-      .populate("studentClass", "className");
-
-    return res.status(200).json({
-      message: "Payment Statistics",
-      success: true,
-      totalCollection,
-      dailyPayments,
-      weeklyPayments,
-      monthlyPayments,
-      payments,
-    });
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", success: false });
-  }
-};
-
-module.exports = { checkAllStudentPayment, makeNewPayment, getPaymentHistory };
