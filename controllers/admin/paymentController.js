@@ -82,18 +82,6 @@ const makeNewPayment = async (req, res) => {
       });
     }
 
-    // ✅ Check if already paid for this month + year
-    // const alreadyPaid = student.payments.find(
-    //   (p) => p.month === month && p.year === year
-    // );
-
-    // if (alreadyPaid) {
-    //   return res.status(400).json({
-    //     message: `Payment already done for ${month}, ${year}.`,
-    //     success: false,
-    //   });
-    // }
-
     const existReceipt = await Payment.findOne({
       receiptNo,
     });
