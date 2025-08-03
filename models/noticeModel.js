@@ -10,11 +10,6 @@ const noticeSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // audience: {
-    //   type: String,
-    //   enum: ["Teachers", "Students", "All"],
-    //   required: true,
-    // },
     date: {
       type: Date,
       default: Date.now,
