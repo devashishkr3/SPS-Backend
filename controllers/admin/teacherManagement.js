@@ -12,7 +12,6 @@ const createTeacher = async (req, res) => {
     const {
       name,
       email,
-      // password,
       age,
       subject,
       phone_no,
