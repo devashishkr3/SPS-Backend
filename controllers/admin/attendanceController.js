@@ -39,6 +39,30 @@ const allStudents = [];
 //   }
 // };
 
+const isAttendanceMarked = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const marked = await Attendance.findOne({
+      classId,
+      date: today,
+      isMarked: true,
+    });
+
+    return res.status(200).json({
+      success: true,
+      alreadyMarked: !!marked,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
 const getAllStudentsByClass = async (req, res) => {
   try {
     const { classID } = req.params;
@@ -73,7 +97,7 @@ const getAllStudentsByClass = async (req, res) => {
 
 const markStudents = async (req, res) => {
   try {
-    const { classId, attendanceData } = req.body;
+    const { classId, attendanceData, isMarked } = req.body;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -84,7 +108,11 @@ const markStudents = async (req, res) => {
       });
     }
 
-    const existAttendance = await Attendance.findOne({ classId, date: today });
+    const existAttendance = await Attendance.findOne({
+      classId,
+      date: today,
+      isMarked: true,
+    });
     if (existAttendance) {
       return res.status(400).json({
         message: "Attandence Already Recorder for Today!",
@@ -93,10 +121,10 @@ const markStudents = async (req, res) => {
     }
 
     for (let student of attendanceData) {
-      console.log(student);
+      // console.log(student);
 
       const studd = await Student.findOne({ studentID: student.Id });
-      console.log(studd.id);
+      // console.log(studd.id);
 
       await Attendance.create({
         studentId: studd.id,
@@ -140,7 +168,7 @@ const markStudents = async (req, res) => {
   }
 };
 
-module.exports = { getAllStudentsByClass, markStudents };
+module.exports = { getAllStudentsByClass, markStudents, isAttendanceMarked };
 
 // await axios.post("https://graph.facebook.com/v17.0/YOUR_PHONE_NUMBER_ID/messages", {
 //               messaging_product: "whatsapp",
