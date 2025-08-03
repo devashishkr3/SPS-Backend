@@ -20,6 +20,10 @@ const attendanceSchema = new mongoose.Schema({
     enum: ["Present", "Absent", "Late"],
     required: true,
   },
+  isMarked: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Attendance = mongoose.model("Attendance", attendanceSchema);
