@@ -42,6 +42,7 @@ const { contactUs } = require("./contactUsController");
 const {
   getAllStudentsByClass,
   markStudents,
+  isAttendanceMarked,
 } = require("./attendanceController");
 const {
   checkAllStudentPayment,
