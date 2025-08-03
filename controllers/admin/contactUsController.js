@@ -4,7 +4,6 @@ require("dotenv").config();
 const contactUs = async (req, res) => {
   try {
     const { name, phone, email, message } = req.body;
-    // console.log(req.body);
 
     const textToAdmin = `Hello Admin,
 
