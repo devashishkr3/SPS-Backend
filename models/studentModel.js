@@ -8,10 +8,6 @@ const studentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // password: {
-    //   type: String,
-    //   required: true,
-    // },
     DOB: {
       type: Date,
       required: true,
@@ -121,51 +117,11 @@ const studentSchema = new mongoose.Schema(
       computer: { type: Number, default: 0 },
       smartClass: { type: String, default: 0 },
     },
-
-    payments: [
-      {
-        month: { type: String, required: true },
-        year: { type: Number, required: true },
-        status: { type: String, enum: ["paid", "unpaid"], default: "unpaid" },
-        totalAmount: { type: Number, default: 0 },
-        paidOn: { type: Date, default: Date.now },
-      },
-    ],
   },
   {
     timestamps: true,
   }
 );
-
-// **Pre-Save Hook to Add Default Fee Payment Entry**
-studentSchema.pre("save", function (next) {
-  if (this.isNew) {
-    const currentMonth = moment().format("MMMM"); // Current month
-    const currentYear = moment().year(); // Current year
-
-    if (this.fixedFees) {
-      let totalAmount =
-        this.payments.length > 0 ? this.payments[0].totalAmount : null;
-
-      if (!totalAmount) {
-        totalAmount =
-          (this.fixedFees.tuitionFee || 0) +
-          (this.fixedFees.busCharge || 0) +
-          (this.fixedFees.hostelFee || 0) +
-          (this.fixedFees.miscellaneous || 0);
-      }
-
-      this.payments.push({
-        month: currentMonth,
-        year: currentYear,
-        status: "unpaid",
-        totalAmount: totalAmount,
-        paidOn: null,
-      });
-    }
-  }
-  next();
-});
 
 const Student = mongoose.model("Student", studentSchema);
 module.exports = Student;
