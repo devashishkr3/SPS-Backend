@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET;
+const BlacklistedToken = require("../../models/blacklistedToken");
 
-const verifyAdmin = (req, res, next) => {
+const verifyAdmin = async (req, res, next) => {
   const token = req.headers.authorization;
 
   try {
@@ -12,8 +13,18 @@ const verifyAdmin = (req, res, next) => {
         success: false,
       });
     }
+    // console.log(token);
+
+    const isBlacklisted = await BlacklistedToken.findOne({ token });
+    if (isBlacklisted) {
+      return res.status(401).json({
+        message: "Token has been blacklisted. Please login again.",
+        success: false,
+      });
+    }
 
     const decode = jwt.verify(token.replace("Bearer", " "), JWT_SECRET);
+
     // console.log(decode);
 
     if (decode.role !== "admin") {
@@ -22,7 +33,6 @@ const verifyAdmin = (req, res, next) => {
         success: false,
       });
     }
-    // console.log(decode);
     req.user = decode;
     next();
   } catch (err) {
