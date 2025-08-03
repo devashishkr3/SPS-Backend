@@ -14,7 +14,6 @@ const createStudent = async (req, res) => {
     const {
       name,
       email,
-      // password,
       DOB,
       f_name,
       m_name,
@@ -32,9 +31,6 @@ const createStudent = async (req, res) => {
       residence_type,
       student_class,
     } = req.body;
-
-    // console.log(payload);
-    console.log(req.body);
 
     if (!req.file) {
       return res.status(404).json({
@@ -77,15 +73,10 @@ const createStudent = async (req, res) => {
 
     await fs.unlink(req.file.path);
 
-    //hashing password for extra security
-    // const hashedPassword = await bcrypt.hash(password, 10);
-    // console.log("hashing ok");
-
     // try {
     const newStudent = new Student({
       name,
       email,
-      // password: hashedPassword,
       studentID,
       DOB,
       f_name,
