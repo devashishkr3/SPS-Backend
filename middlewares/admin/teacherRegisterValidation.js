@@ -10,10 +10,6 @@ const teacherRegisterValidation = (req, res, next) => {
       "string.empty": "Email is required.",
       "string.email": "Email must be a valid email address.",
     }),
-    // password: Joi.string().min(6).required().messages({
-    //   "string.empty": "Password is required.",
-    //   "string.min": "Password must be at least 6 characters long.",
-    // }),
     age: Joi.number().integer().required().messages({
       "number.base": "Age must be a number.",
     }),
