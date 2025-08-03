@@ -32,6 +32,7 @@ const {
   deleteEvent,
   getAllStudentsByClass,
   markStudents,
+  isAttendanceMarked,
   checkAllStudentPayment,
   makeNewPayment,
   getPaymentHistory,
@@ -68,6 +69,7 @@ router.get("/dashboard/get-all-count", verifyAdmin, getAllCount);
 
 //Attendance
 router.post("/attendance/mark-attendance", verifyAdmin, markStudents); //markAttendance
+// router.get("/attendance/is-marked/:classID", verifyAdmin, isAttendanceMarked); // verify/checking for attendance marked or not
 router.get("/attendance/:classID", verifyAdmin, getAllStudentsByClass); //get students by class for attendance
 
 //Teacher
