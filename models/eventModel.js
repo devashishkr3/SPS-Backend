@@ -17,11 +17,9 @@ const eventSchema = new mongoose.Schema(
     },
     attachment: {
       type: String,
-      // required: true,
     },
     attachmentID: {
       type: String,
-      // required: true,
     },
   },
   { timestamps: true }
