@@ -1,25 +1,21 @@
 const express = require("express");
-require("dotenv").config();
-require("./models/db");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 8080;
 const adminRoute = require("./routes/adminRoute");
-const studentRoute = require("./routes/studentRoute");
-const teacherRoute = require("./routes/teacherRoute");
 const schoolRoute = require("./routes/schoolRoute");
 const errorHandler = require("./utils/errorHandler");
+
+// Load ENVIRONMENT Variable (.env)
+require("dotenv").config();
+require("./models/db");
 
 // app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: "50mb" }));
 
 // Whitelist your frontend domain
-const allowedOrigins = [
-  "https://school-management-fqyzvx3ed-devashishkr3s-projects.vercel.app",
-  // "http://localhost:5173",
-  "https://school-management-eta-one.vercel.app",
-];
+const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173"];
 // Add production domain when deploying
 
 app.use(
@@ -36,8 +32,6 @@ app.use(
 );
 
 app.use("/school", schoolRoute);
-app.use("/student", studentRoute);
-app.use("/teacher", teacherRoute);
 app.use("/admin", adminRoute);
 app.get("/api/test", (req, res) => {
   res.status(200).json({
@@ -45,7 +39,6 @@ app.get("/api/test", (req, res) => {
     success: true,
   });
 });
-// app.use("/admission");
 
 // Handle Invalid Routes
 app.get("*", (req, res) => {
