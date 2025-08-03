@@ -39,15 +39,4 @@ const getAllCount = async (req, res) => {
   }
 };
 
-// const adminProfile = async (req, res) => {
-//   try {
-//     const admin = await Admin.find({})
-//   } catch (err) {
-//     return res.status(500).json({
-//       message: "Internal Server Error",
-//       success : false,
-//     })
-//   }
-// }
-
 module.exports = { getAllCount };
