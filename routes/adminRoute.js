@@ -1,44 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const {
-  adminLoginController,
-  adminRegister,
-  changeAdminPassword,
-  adminLogoutController,
-  createTeacher,
-  getAllTeachers,
-  updateTeacher,
-  deleteTeacher,
-  createStudent,
-  getAllStudents,
-  updateStudent,
-  // deleteStudent,
-  createClass,
-  getAllClass,
-  globalSearch,
-  createNotice,
-  getAllNotice,
-  deleteNotice,
-  addGalleryImage,
-  getAllImages,
-  deleteImage,
-  // changeAdminPassword,
-  forgetAdminPassword,
-  verifyOTP,
-  resetPassword,
-  getAllCount,
-  createEvent,
-  getAllEvent,
-  deleteEvent,
-  getAllStudentsByClass,
-  markStudents,
-  isAttendanceMarked,
-  checkAllStudentPayment,
-  makeNewPayment,
-  getPaymentHistory,
-  getDashboardGraphData,
-  // adminProfile,
-} = require("../controllers/admin/app");
+const adminAuthController = require("../controllers/adminAuthController");
+const adminDashboard = require("../controllers/adminDashboard");
+const adminManagementController = require("../controllers/adminManagementController");
+const attendanceController = require("../controllers/attendanceController");
+const contactUsController = require("../controllers/contactUsController");
+const eventManagement = require("../controllers/eventManagement");
+const forgetAdminPassword = require("../controllers/forgetAdminPassword");
+const galleryManagement = require("../controllers/galleryManagement");
+const noticeManagement = require("../controllers/noticeManagement");
+const paymentController = require("../controllers/paymentController");
+const studentManagement = require("../controllers/studentManagement");
+const teacherManagement = require("../controllers/teacherManagement");
+const earningController = require("../controllers/earningController");
 const {
   teacherRegisterValidation,
   studentRegisterValidation,
@@ -49,7 +23,7 @@ const {
   eventValidator,
   verifyToken,
   paymentValidation,
-} = require("../middlewares/admin/app");
+} = require("../middlewares/app");
 const upload = require("../utils/multerConfig");
 
 //Admin
@@ -57,20 +31,36 @@ router.post(
   "/register",
   upload.single("image"),
   adminRegisterValidation,
-  adminRegister
+  adminAuthController.adminRegister
 );
-router.post("/login", adminLoginValidation, adminLoginController);
-router.post("/update-profile", verifyAdmin, changeAdminPassword);
-router.post("/logout", adminLogoutController);
+router.post(
+  "/login",
+  adminLoginValidation,
+  adminAuthController.adminLoginController
+);
+router.post(
+  "/update-profile",
+  verifyAdmin,
+  adminAuthController.changeAdminPassword
+);
+router.post("/logout", adminAuthController.adminLogoutController);
 
 //Dashboard
 // router.get("/profile", verifyAdmin, adminProfile);
-router.get("/dashboard/get-all-count", verifyAdmin, getAllCount);
+router.get("/dashboard/get-all-count", verifyAdmin, adminDashboard.getAllCount);
 
 //Attendance
-router.post("/attendance/mark-attendance", verifyAdmin, markStudents); //markAttendance
+router.post(
+  "/attendance/mark-attendance",
+  verifyAdmin,
+  attendanceController.markStudents
+); //markAttendance
 // router.get("/attendance/is-marked/:classID", verifyAdmin, isAttendanceMarked); // verify/checking for attendance marked or not
-router.get("/attendance/:classID", verifyAdmin, getAllStudentsByClass); //get students by class for attendance
+router.get(
+  "/attendance/:classID",
+  verifyAdmin,
+  attendanceController.getAllStudentsByClass
+); //get students by class for attendance
 
 //Teacher
 router.post(
@@ -78,11 +68,23 @@ router.post(
   verifyAdmin,
   upload.single("image"),
   teacherRegisterValidation,
-  createTeacher
+  teacherManagement.createTeacher
 );
-router.get("/teacher/get-all-teachers", verifyAdmin, getAllTeachers);
-router.patch("/teacher/update-teacher", verifyAdmin, updateTeacher);
-router.delete("/teacher/delete-teacher/:teacherId", verifyAdmin, deleteTeacher);
+router.get(
+  "/teacher/get-all-teachers",
+  verifyAdmin,
+  teacherManagement.getAllTeachers
+);
+router.patch(
+  "/teacher/update-teacher",
+  verifyAdmin,
+  teacherManagement.updateTeacher
+);
+router.delete(
+  "/teacher/delete-teacher/:teacherId",
+  verifyAdmin,
+  teacherManagement.deleteTeacher
+);
 
 //Student
 router.post(
@@ -90,11 +92,19 @@ router.post(
   verifyAdmin,
   upload.single("image"),
   studentRegisterValidation,
-  createStudent
+  studentManagement.createStudent
 );
-router.get("/student/get-all-students", verifyAdmin, getAllStudents);
-router.patch("/student/update-student/:studentId", verifyAdmin, updateStudent);
-// router.delete("/student/:studentId", verifyAdmin, deleteStudent);
+router.get(
+  "/student/get-all-students",
+  verifyAdmin,
+  studentManagement.getAllStudents
+);
+router.patch(
+  "/student/update-student/:studentId",
+  verifyAdmin,
+  studentManagement.updateStudent
+);
+// router.delete("/student/:studentId", verifyAdmin, studentManagement.deleteStudent);
 
 //Notice
 router.post(
@@ -102,10 +112,10 @@ router.post(
   verifyAdmin,
   upload.single("image"),
   noticeValidator,
-  createNotice
+  noticeManagement.createNotice
 );
-router.get("/notice", getAllNotice);
-router.delete("/notice/:noticeID", verifyAdmin, deleteNotice);
+router.get("/notice", noticeManagement.getAllNotice);
+router.delete("/notice/:noticeID", verifyAdmin, noticeManagement.deleteNotice);
 
 //Event
 router.post(
@@ -113,27 +123,39 @@ router.post(
   verifyAdmin,
   upload.single("image"),
   eventValidator,
-  createEvent
+  eventManagement.createEvent
 );
-router.get("/event", getAllEvent);
-router.delete("/event/:eventID", verifyAdmin, deleteEvent);
+router.get("/event", eventManagement.getAllEvent);
+router.delete("/event/:eventID", verifyAdmin, eventManagement.deleteEvent);
 
 //Class
-router.post("/create-class", verifyAdmin, createClass);
-router.get("/get-all-class", verifyAdmin, getAllClass);
+router.post(
+  "/create-class",
+  verifyAdmin,
+  adminManagementController.createClass
+);
+router.get(
+  "/get-all-class",
+  verifyAdmin,
+  adminManagementController.getAllClass
+);
 
 //Search
-router.get("/search", verifyAdmin, globalSearch);
+router.get("/search", verifyAdmin, adminManagementController.globalSearch);
 
 //Gallery
 router.post(
   "/gallery/add-images",
   verifyAdmin,
   upload.single("image"),
-  addGalleryImage
+  galleryManagement.addGalleryImage
 );
-router.get("/gallery/get-all-images", getAllImages);
-router.delete("/gallery/delete-image/:id", verifyAdmin, deleteImage);
+router.get("/gallery/get-all-images", galleryManagement.getAllImages);
+router.delete(
+  "/gallery/delete-image/:id",
+  verifyAdmin,
+  galleryManagement.deleteImage
+);
 
 //Protected Route
 router.get("/dashboard", verifyAdmin);
@@ -141,20 +163,24 @@ router.get("/teacher", verifyAdmin);
 router.get("/student", verifyAdmin);
 
 //Payment Routes
-router.get("/get-all-student", verifyAdmin, checkAllStudentPayment);
-router.post(
-  "/payment/make-payment",
-  verifyAdmin,
-  paymentValidation,
-  makeNewPayment
-);
-router.get("/payment/history", verifyAdmin, getPaymentHistory);
-router.get("/earning", verifyAdmin, getDashboardGraphData);
+// router.get("/get-all-student", verifyAdmin, checkAllStudentPayment);
+// router.post(
+//   "/payment/make-payment",
+//   verifyAdmin,
+//   paymentValidation,
+//   makeNewPayment
+// );
+// router.get("/payment/history", verifyAdmin, getPaymentHistory);
+// router.get("/earning", verifyAdmin, getDashboardGraphData);
 // router.get("/checkPayment-of-students", verifyAdmin, getAllStudents);
 
+router.put("/pay/:id", paymentController.markAsPaid);
+router.get("/student/:id/unpaid", paymentController.getUnpaidPayments);
+router.get("/dashboard/summary", paymentController.getDashboardStats);
+
 //forget password for admin
-router.post("/forget-password", forgetAdminPassword);
-router.post("/verify-otp", verifyOTP);
-router.post("/reset-password", resetPassword);
+router.post("/forget-password", forgetAdminPassword.forgetAdminPassword);
+router.post("/verify-otp", forgetAdminPassword.verifyOTP);
+router.post("/reset-password", forgetAdminPassword.resetPassword);
 
 module.exports = router;
