@@ -29,7 +29,7 @@ const paymentSchema = new mongoose.Schema(
     },
     totalAmount: { type: Number, required: true },
     receiptNo: { type: String, required: true }, // 🔹 Unique hata diya agar student-wise generate ho raha hai
-    paymentDate: { type: Date, default: Date.now },
+    paymentDate: { type: Date, default: null },
     paymentMethod: {
       type: String,
       enum: ["Offline", "Online"],
