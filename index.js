@@ -19,11 +19,12 @@ require("./utils/cornSheduler");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: "50mb" }));
 
+const allowedOrigins = [];
 // Whitelist your frontend domain
 if (process.env.NODE_ENV === "production") {
-  const allowedOrigins = [process.env.FRONTEND_URL, "*"];
+  allowedOrigins = [process.env.FRONTEND_URL, "*"];
 } else if (process.env.NODE_ENV === "development") {
-  const allowedOrigins = ["http://localhost:5173"];
+  allowedOrigins = ["http://localhost:5173"];
 }
 
 app.use(
