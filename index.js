@@ -8,7 +8,12 @@ const errorHandler = require("./utils/errorHandler");
 
 // Load ENVIRONMENT Variable (.env)
 require("dotenv").config();
+
+// Load DB
 require("./models/db");
+
+// Load Corn
+require("./utils/cornSheduler");
 
 // app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
